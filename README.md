@@ -1,4 +1,17 @@
-# Maileon [![Build Status](http://travis-ci.org/interactive-pioneers/maileon.svg?branch=master)](https://travis-ci.org/interactive-pioneers/maileon) [![Gem Version](https://badge.fury.io/rb/maileon.svg)](http://badge.fury.io/rb/maileon) [![Coverage Status](https://coveralls.io/repos/interactive-pioneers/maileon/badge.svg)](https://coveralls.io/r/interactive-pioneers/maileon)
+# Maileon Fork Criess Work in Progress
+
+## TODO/current WIPs
+
+* modules with methods for transaction_types
+* modules with methods for transaction  
+* integrate with rails' action_mailer
+** mail delivery method
+** railtie to load codes and integrations
+** doc and examples for this
+* tests (!!!) :-)
+
+# From Original Maileon README: [![Build Status](http://travis-ci.org/interactive-pioneers/maileon.svg?branch=master)](https://travis-ci.org/interactive-pioneers/maileon) [![Gem Version](https://badge.fury.io/rb/maileon.svg)](http://badge.fury.io/rb/maileon) [![Coverage Status](https://coveralls.io/repos/interactive-pioneers/maileon/badge.svg)](https://coveralls.io/r/interactive-pioneers/maileon)
+
 
 Ruby wrapper for Maileon email marketing software API.
 
