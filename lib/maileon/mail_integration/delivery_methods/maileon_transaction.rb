@@ -29,8 +29,8 @@ module Mail
 
       # TODO do we need this here or are railties always dependant on Rails and ActiveSupport?
       if defined?(Rails) && (Rails.respond_to? :logger) && defined?(ActiveSupport::Notifications)
-        @api.data[:instrumentor_name] = "maileon_api"
-        @api.data[:instrumentor]      = ActiveSupport::Notifications
+        @api.session.data[:instrumentor_name] = "maileon_api"
+        @api.session.data[:instrumentor]      = ActiveSupport::Notifications
 
         ActiveSupport::Notifications.subscribe /^maileon_api/ do |name, started, finished, unique_id, payload|
           http_method_pretty = "#{payload[:method].to_s.upcase}"
