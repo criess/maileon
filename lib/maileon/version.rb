@@ -1,4 +1,4 @@
 module Maileon
-  VERSION = "0.1.3-fork.criess"
+  VERSION = "0.1.3.unstable"
 end
 

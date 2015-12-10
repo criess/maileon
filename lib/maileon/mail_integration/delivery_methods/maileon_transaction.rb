@@ -25,7 +25,19 @@ module Mail
       @settings.merge!(settings)
 
       # api object
-      @api = Maileon::API.new(settings[:api_key], true)
+      @api = Maileon::API.new(settings[:api_key])
+
+      # TODO do we need this here or are railties always dependant on Rails and ActiveSupport?
+      if defined?(Rails) && (Rails.respond_to? :logger) && defined?(ActiveSupport::Notifications)
+        @api.data[:instrumentor_name] = "maileon_api"
+        @api.data[:instrumentor]      = ActiveSupport::Notifications
+
+        ActiveSupport::Notifications.subscribe /^maileon_api/ do |name, started, finished, unique_id, payload|
+          http_method_pretty = "#{payload[:method].to_s.upcase}"
+          timings_pretty = "#{( (finished - started) * 1000).floor.to_s.rjust(6," ")}"
+          Rails.logger.info "  maileon_api (#{http_method_pretty}) #{timings_pretty} ms"
+        end
+      end
     end
 
     def deliver!(mail)

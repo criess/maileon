@@ -18,9 +18,9 @@ module Maileon
 
         raise 'You must provide Maileon API key' unless apikey
 
-        @apikey = Base64.encode64(apikey).strip
-        @debug = debug
-        @session = Excon.new @host, :debug => debug
+        self.apikey  = Base64.encode64(apikey).strip
+        self.debug   = debug
+        self.session = Excon.new @host, :debug => debug
       end
 
     end
