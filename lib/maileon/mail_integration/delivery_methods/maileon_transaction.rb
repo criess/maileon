@@ -1,4 +1,5 @@
 require 'mail/check_delivery_params'
+require 'active_support/core_ext'
 
 module Mail
 
@@ -27,16 +28,18 @@ module Mail
       # api object
       @api = Maileon::API.new(settings[:api_key])
 
-      # TODO do we need this here or are railties always dependant on Rails and ActiveSupport?
-      if defined?(Rails) && (Rails.respond_to? :logger) && defined?(ActiveSupport::Notifications)
+      # TODO do we need this here or are railties always dependant on Rails?
+      if defined?(Rails) && (Rails.respond_to? :logger)
+
         @api.session.data[:instrumentor_name] = "maileon_api"
         @api.session.data[:instrumentor]      = ActiveSupport::Notifications
 
         ActiveSupport::Notifications.subscribe /^maileon_api/ do |name, started, finished, unique_id, payload|
           http_method_pretty = "#{payload[:method].to_s.upcase}"
-          timings_pretty = "#{( (finished - started) * 1000).floor.to_s.rjust(6," ")}"
-          Rails.logger.info "  maileon_api (#{http_method_pretty}) #{timings_pretty} ms"
+          timings_pretty     = "#{( (finished - started) * 1000).floor.to_s.rjust(6," ")}"
+          Rails.logger.info  "  maileon_api (#{http_method_pretty}) #{timings_pretty} ms" unless http_method_pretty == ""
         end
+
       end
     end
 
@@ -54,7 +57,8 @@ module Mail
       # send type api with params
       api.create_transaction(
         transaction_type["id"].to_i,
-        variables.merge(
+        # deep_merge from active_support
+        variables.deep_merge(
           {
             "import" => {
               "contact" => {
