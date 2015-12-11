@@ -8,7 +8,8 @@ module Mail
   # configuration could be done on application initializers
   #   config.action_mailer.delivery_method              = :maileon_transaction
   #   config.action_mailer.maileon_transaction_settings = {
-  #     :api_key => "xxxxxx-yyy-xxx-yyyyyy"
+  #     :api_key         => "xxxxxx-yyy-xxx-yyyyyy",
+  #     :update_contacts => true|false
   #   }
   class MaileonTransactionDelivery
     include Mail::CheckDeliveryParams
@@ -21,25 +22,23 @@ module Mail
 
     # emtpy initializer for now
     def initialize settings
-      # do something with config
-      @settings ||= {}
+      # init settings with defaults
+      @settings ||= {
+        :update_contacts => false
+      }
       @settings.merge!(settings)
 
       # api object
       @api = Maileon::API.new(settings[:api_key])
 
-      # TODO do we need this here or are railties always dependant on Rails?
-      if defined?(Rails) && (Rails.respond_to? :logger)
+      @api.session.data[:instrumentor_name] = "maileon_api"
+      @api.session.data[:instrumentor]      = ActiveSupport::Notifications
 
-        @api.session.data[:instrumentor_name] = "maileon_api"
-        @api.session.data[:instrumentor]      = ActiveSupport::Notifications
-
-        ActiveSupport::Notifications.subscribe /^maileon_api/ do |name, started, finished, unique_id, payload|
-          http_method_pretty = "#{payload[:method].to_s.upcase}"
-          timings_pretty     = "#{( (finished - started) * 1000).floor.to_s.rjust(6," ")}"
-          Rails.logger.info  "  maileon_api (#{http_method_pretty}) #{timings_pretty} ms" unless http_method_pretty == ""
-        end
-
+      ActiveSupport::Notifications.subscribe /^maileon_api/ do |name, started, finished, unique_id, payload|
+        http_method_pretty = "#{payload[:method].to_s.upcase}"
+        timings_pretty     = "#{( (finished - started) * 1000).floor}"
+        action_path        = ""
+        logger.info  "  maileon_api (#{http_method_pretty}) (}) #{timings_pretty} ms" unless http_method_pretty == ""
       end
     end
 
@@ -55,7 +54,7 @@ module Mail
       variables = check_maileon_variables(transaction_type, mail)
 
       # send type api with params
-      api.create_transaction(
+      transaction = api.create_transaction(
         transaction_type["id"].to_i,
         # deep_merge from active_support
         variables.deep_merge(
@@ -70,6 +69,17 @@ module Mail
           }
         )
       )
+
+      # update maileon contact if transaction was success
+      if settings[:update_contacts] &&
+        transaction.try(:[],"reports").try(:size) == 1 &&
+        variables.try(:[], "import").try(:[], "contact")
+        contact_variables = variables["import"]["contact"].clone.tap do |hash|
+          hash["email"] = mail["to"].value
+        end
+        api.update_contact_by_email(contact_variables["email"], contact_variables)
+      end
+
       # mail
       mail
     end
@@ -105,13 +115,17 @@ module Mail
         errors << entry["name"] unless variables.keys.include?(entry["name"])
         errors
       end
-      ActionMailer::Base.logger.debug "check_maileon_variables #{transaction_type["attributes"]["attribute"]}"
+      logger.debug "check_maileon_variables #{transaction_type["attributes"]["attribute"]}"
       raise (runtime_error "missing variable/s #{errors}") unless errors.empty?
       errors.empty? && variables
     end
 
     def runtime_error msg
        RuntimeError.new "maileon action_mailer integration :: #{msg}"
+    end
+
+    def logger
+      ActionMailer::Base.logger
     end
 
   end
