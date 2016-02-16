@@ -21,7 +21,7 @@ module Maileon
       #
       def create_contact(params, body={})
         raise ArgumentError.new("No parameters.") if params.empty?
-        raise ArgumentError.new("Email is mandatory.") if params[:email].nil?
+        raise ArgumentError.new("Emgetail is mandatory.") if params[:email].nil?
         raise Maileon::Errors::ValidationError.new("Invalid email format.") unless is_valid_email(params[:email])
         email = URI::escape(params[:email])
         permission = params[:permission] ||= 1
@@ -45,6 +45,16 @@ module Maileon
         email = URI::escape(params[:email])
         url = "contacts/#{email}"
         session.delete(:path => "#{@path}#{url}", :headers => get_headers('xml'))
+      end
+
+      # GET https://api.maileon.com/1.0/contacts/email/:value
+      def get_contact_by_email email
+        url = "contacts/email/#{CGI.escape email}"
+        response = session.get(
+          :path => "#{@path}#{url}",
+          :headers => get_headers.merge({ "Content-Type" => "application/vnd.maileon.api+xml" }),
+        )
+        Hash.from_xml response.body
       end
     end
   end

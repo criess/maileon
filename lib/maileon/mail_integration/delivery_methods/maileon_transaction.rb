@@ -70,6 +70,8 @@ module Mail
         )
       )
 
+      logger.warn "Maileon Transaction Response :: #{transaction}"
+
       # update maileon contact if transaction was success
       if settings[:update_contacts] &&
         transaction.try(:[],"reports").try(:size) == 1 &&

@@ -5,6 +5,8 @@ module Maileon
     include Maileon::Api::TransactionMethods
     include Maileon::Api::MailingMethods
     include Maileon::Api::ContactMethods
+    include Maileon::Api::ReportMethods
+    include Maileon::Api::FieldBackupMethods
 
     def ping
       session.get(:path => "#{@path}/ping", :headers => get_headers)
