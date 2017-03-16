@@ -16,6 +16,7 @@ module Mail
 
     HEADER_TYPE_KEY = :"X-Maileon-TransactionType"
     HEADER_VARS_KEY = :"X-Maileon-Variables"
+    HEADER_ATTACHMENTS_KEY = :"X-Maileon-Attachments"
 
     attr_accessor :settings
     attr_reader   :api
@@ -64,6 +65,13 @@ module Mail
       # query api for variables
       # generate variable mapping
       variables = check_maileon_variables(transaction_type, mail)
+
+      # prepare attachments to be committed within transaction
+      attachments = check_maileon_attachments(mail)
+      # add attachment data to variables
+      if attachments.size > 0
+        variables["attachments"] = attachments
+      end
 
       # send type api with params
       transaction = api.create_transaction(
@@ -132,6 +140,33 @@ module Mail
       logger.debug "check_maileon_variables #{transaction_type["attributes"]["attribute"]}"
       raise (runtime_error "missing variable/s #{errors}") unless errors.empty?
       errors.empty? && variables
+    end
+
+    def check_maileon_attachments(mail)
+      begin
+        file_links = JSON.parse mail[HEADER_ATTACHMENTS_KEY].value
+      rescue
+        raise (runtime_error "unable to load/parse :maileon_attachments for mail")
+      end
+
+      attachments = Array.new
+
+      # append hashes with
+      # :data => file payload in base64
+      # :mime =>
+      # :name => name to display in email
+      file_links.each do |name, file_to_load|
+        absolute_path = File.join Rails.root, "#{file_to_load}"
+        attachments << {
+          :data => Base64.encode64(
+            File.open(absolute_path, "rb").read
+          ),
+          :mime => "#{Mime::Type.lookup_by_extension( name.split(".").last ) || "application/octet-stream"}",
+          :name => "#{name}"
+        }
+      end
+
+      attachments
     end
 
     def runtime_error msg
