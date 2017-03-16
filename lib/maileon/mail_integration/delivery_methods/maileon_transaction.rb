@@ -20,6 +20,8 @@ module Mail
     attr_accessor :settings
     attr_reader   :api
 
+    @@has_notifications_installed = false
+
     # emtpy initializer for now
     def initialize settings
       # init settings with defaults
@@ -34,12 +36,22 @@ module Mail
       @api.session.data[:instrumentor_name] = "maileon_api"
       @api.session.data[:instrumentor]      = ActiveSupport::Notifications
 
-      ActiveSupport::Notifications.subscribe /^maileon_api/ do |name, started, finished, unique_id, payload|
-        http_method_pretty = "#{payload[:method].to_s.upcase}"
-        timings_pretty     = "#{( (finished - started) * 1000).floor}"
-        action_path        = ""
-        logger.info  "  maileon_api (#{http_method_pretty}) (}) #{timings_pretty} ms" unless http_method_pretty == ""
+      install_notifications_for_class!
+    end
+
+    def install_notifications_for_class!
+      if !@@has_notifications_installed
+        ActiveSupport::Notifications.subscribe /^maileon_api/ do |name, started, finished, unique_id, payload|
+          http_method_pretty = "#{payload[:method].to_s.upcase}"
+          timings_pretty     = "#{( (finished - started) * 1000).floor}"
+          action_path        = ""
+          logger.info  "  maileon_api (#{http_method_pretty}) (}) #{timings_pretty} ms" unless http_method_pretty == ""
+        end
+        @@has_notifications_installed = true
       end
+
+      # self-chaining enabled
+      self
     end
 
     def deliver!(mail)
