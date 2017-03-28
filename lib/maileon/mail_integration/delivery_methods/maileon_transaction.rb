@@ -27,7 +27,7 @@ module Mail
     def initialize settings
       # init settings with defaults
       @settings ||= {
-        :update_contacts => false
+        :update_contacts => false,
         :debug => false
       }
       @settings.merge!(settings)
