@@ -28,11 +28,12 @@ module Mail
       # init settings with defaults
       @settings ||= {
         :update_contacts => false
+        :debug => false
       }
       @settings.merge!(settings)
 
       # api object
-      @api = Maileon::API.new(settings[:api_key])
+      @api = Maileon::API.new(@settings[:api_key], @settings[:debug])
 
       @api.session.data[:instrumentor_name] = "maileon_api"
       @api.session.data[:instrumentor]      = ActiveSupport::Notifications
