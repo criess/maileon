@@ -20,7 +20,7 @@ module Maileon
 
         self.apikey  = Base64.encode64(apikey).strip
         self.debug   = debug
-        self.session = Excon.new @host, :debug => debug
+        self.session = Excon.new @host, :debug_request => debug, :debug_response => debug
       end
 
     end
