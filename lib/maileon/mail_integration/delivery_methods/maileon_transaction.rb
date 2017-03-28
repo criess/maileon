@@ -68,8 +68,8 @@ module Mail
 
       # prepare attachments to be committed within transaction
       attachments = check_maileon_attachments(mail)
-      # add attachment data to variables
-      if attachments.size > 0
+
+      unless attachments.empty?
         variables["attachments"] = attachments
       end
 

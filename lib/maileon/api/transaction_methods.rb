@@ -37,6 +37,7 @@ module Maileon
           "name" => name,
           "content" => variables
         }
+
         response = session.post(
           :path => "#{@path}#{url}",
           :headers => get_headers.merge({ "Content-Type" => "application/json" }),
@@ -55,9 +56,11 @@ module Maileon
           {
             "type" => id_of_transaction,
             "import" => params["import"] || {},
-            "content" => begin params.except("import") rescue {} end || {}
+            "content" => begin params.except("import").except("attachments") rescue {} end || {},
+            "attachments" => params["attachments"] || {}
           }
         ]
+
         response = session.post(
           :path => "#{@path}#{url}",
           :headers => get_headers.merge({ "Content-Type" => "application/json" }),
