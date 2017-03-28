@@ -162,8 +162,8 @@ module Mail
           :data => Base64.encode64(
             File.open(absolute_path, "rb").read
           ),
-          :mime => "#{Mime::Type.lookup_by_extension( name.split(".").last ) || "application/octet-stream"}",
-          :name => "#{name}"
+          :mimetype => "#{Mime::Type.lookup_by_extension( name.split(".").last ) || "application/octet-stream"}",
+          :filename => "#{name}"
         }
       end
 
