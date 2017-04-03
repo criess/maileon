@@ -57,8 +57,9 @@ module Maileon
             "type" => id_of_transaction,
             "import" => params["import"] || {},
             "content" => begin params.except("import").except("attachments") rescue {} end || {},
-            "attachments" => params["attachments"] || {}
-          }
+          }.merge(
+            params["attachments"].is_a?(Array) ? {"attachments" => params["attachments"]} : {}
+          )
         ]
 
         response = session.post(
