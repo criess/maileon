@@ -12,7 +12,6 @@ module Mail
   #     :update_contacts => true|false
   #   }
   class MaileonTransactionDelivery
-    include Mail::CheckDeliveryParams
 
     HEADER_TYPE_KEY = :"X-Maileon-TransactionType"
     HEADER_VARS_KEY = :"X-Maileon-Variables"
@@ -58,7 +57,7 @@ module Mail
 
     def deliver!(mail)
       # implement maileon send
-      check_delivery_params(mail)
+      Mail::CheckDeliveryParams.check(mail)
 
       # query api for type
       transaction_type = check_maileon_transaction_params(mail)
