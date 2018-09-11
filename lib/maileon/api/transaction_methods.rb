@@ -50,7 +50,7 @@ module Maileon
 
       def create_transaction(id_of_transaction, params)
 
-        raise "id_of_transaction must be integer" unless (id_of_transaction.is_a? Fixnum)
+        raise "id_of_transaction must be integer" unless (Integer === id_of_transaction)
         url = "transactions"
         body = [
           {
@@ -73,7 +73,7 @@ module Maileon
       end
 
       def delete_transaction_type(type_id)
-        raise "id_of_transaction must be integer" unless (type_id.is_a? Fixnum)
+        raise "id_of_transaction must be integer" unless (Integer === type_id)
         url = "transactions/types/#{type_id}"
         response = session.delete(
           :path => "#{@path}#{url}",
